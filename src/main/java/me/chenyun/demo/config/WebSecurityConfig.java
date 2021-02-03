@@ -1,6 +1,7 @@
 package me.chenyun.demo.config;
 
 import lombok.RequiredArgsConstructor;
+import me.chenyun.demo.jwt.JwtTokenVerifier;
 import me.chenyun.demo.jwt.JwtUsernameAndPasswordAuthenticationFilter;
 import me.chenyun.demo.security.UserPermission;
 import me.chenyun.demo.service.UserService;
@@ -47,6 +48,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                     .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
                 .addFilter(new JwtUsernameAndPasswordAuthenticationFilter(authenticationManager()))
+                .addFilterAfter(new JwtTokenVerifier(), JwtUsernameAndPasswordAuthenticationFilter.class)
                 .authorizeRequests()
                 .antMatchers("/", "index", "/css/*", "/js/*").permitAll()
                 .antMatchers("/api/**").hasRole(STUDENT.name())
