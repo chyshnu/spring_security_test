@@ -1,6 +1,7 @@
 package me.chenyun.demo.config;
 
 import lombok.RequiredArgsConstructor;
+import me.chenyun.demo.jwt.JwtConfig;
 import me.chenyun.demo.jwt.JwtTokenVerifier;
 import me.chenyun.demo.jwt.JwtUsernameAndPasswordAuthenticationFilter;
 import me.chenyun.demo.security.UserPermission;
@@ -24,6 +25,7 @@ import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
+import javax.crypto.SecretKey;
 import java.util.concurrent.TimeUnit;
 
 import static me.chenyun.demo.security.UserPermission.STUDENT_WRITE;
@@ -37,6 +39,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     private final PasswordEncoder passwordEncoder;
     private final UserService userService;
+    private final SecretKey secretKey;
+    private final JwtConfig jwtConfig;
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
@@ -47,8 +51,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .sessionManagement()
                     .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
-                .addFilter(new JwtUsernameAndPasswordAuthenticationFilter(authenticationManager()))
-                .addFilterAfter(new JwtTokenVerifier(), JwtUsernameAndPasswordAuthenticationFilter.class)
+                .addFilter(new JwtUsernameAndPasswordAuthenticationFilter(authenticationManager(), jwtConfig, secretKey))
+                .addFilterAfter(new JwtTokenVerifier(secretKey, jwtConfig), JwtUsernameAndPasswordAuthenticationFilter.class)
                 .authorizeRequests()
                 .antMatchers("/", "index", "/css/*", "/js/*").permitAll()
                 .antMatchers("/api/**").hasRole(STUDENT.name())
